@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+  <meta name="theme-color" content="#0b0b0e">
+  <title>Sin Filtro</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div>
+        <h1>Sin Filtro</h1>
+        <p>Preguntas incómodas. Votos sinceros.</p>
+      </div>
+      <button id="communityStatus" class="status offline" type="button" aria-label="Estado de la comunidad">
+        <span class="status-dot"></span><span id="statusText">Local</span>
+      </button>
+    </header>
+
+    <section class="filters">
+      <label class="select-wrap">
+        <span>Mazo</span>
+        <select id="mode">
+          <option value="Para ti">Para ti</option>
+          <option value="Popular">Populares</option>
+          <option value="Nuevas">Nuevas</option>
+          <option value="Todas">Mezcla completa</option>
+        </select>
+      </label>
+      <label class="check-row"><input id="noRepeat" type="checkbox" checked><span>Sin repetir</span></label>
+    </section>
+
+    <section class="question-card" aria-live="polite">
+      <div class="card-head">
+        <span id="badge" class="badge">Mezcla completa</span>
+        <div class="vote-stack" aria-label="Votar pregunta">
+          <button id="upvote" class="vote-button" type="button" aria-label="Me gusta">
+            <span class="arrow">▲</span><span id="upCount">0</span>
+          </button>
+          <button id="downvote" class="vote-button" type="button" aria-label="No me gusta">
+            <span class="arrow">▼</span><span id="downCount">0</span>
+          </button>
+        </div>
+      </div>
+      <div id="question" class="question">Pulsa el botón y votad sin pensar demasiado.</div>
+      <div class="card-foot">
+        <span id="rankInfo">Sin votos todavía</span>
+        <span id="remaining">150 disponibles</span>
+      </div>
+    </section>
+
+    <button id="next" class="primary" type="button">Sacar pregunta</button>
+
+    <section class="actions">
+      <button id="addQuestion" type="button"><span>＋</span>Añadir</button>
+      <button id="shareQuestion" type="button"><span>↗</span>Pregunta</button>
+      <button id="sync" type="button"><span>⟳</span>Sincronizar</button>
+      <button id="shareApp" type="button"><span>⬇</span>Compartir APK</button>
+    </section>
+
+    <p class="notice">Funciona sin conexión. La comunidad Nostr es opcional. Solo para adultos.</p>
+  </main>
+
+  <dialog id="addDialog">
+    <form id="addForm" method="dialog" class="dialog-card">
+      <div class="dialog-head"><h2>Nueva pregunta</h2><button class="close" value="cancel" aria-label="Cerrar">×</button></div>
+      <label>Pregunta
+        <textarea id="newQuestion" maxlength="220" required placeholder="¿Quién tiene más probabilidades de…?"></textarea>
+      </label>
+      <label>Categoría
+        <select id="newCategory"></select>
+      </label>
+      <p class="helper">Se guarda primero en el móvil. Con internet, se firma y se publica en varios relays Nostr.</p>
+      <div class="dialog-actions"><button value="cancel" class="secondary">Cancelar</button><button id="publishQuestion" value="default" class="primary small">Añadir</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="communityDialog">
+    <section class="dialog-card">
+      <div class="dialog-head"><h2>Comunidad</h2><button id="closeCommunity" class="close" aria-label="Cerrar">×</button></div>
+      <div class="stats-grid">
+        <div><strong id="communityQuestions">0</strong><span>preguntas</span></div>
+        <div><strong id="communityVotes">0</strong><span>votos</span></div>
+        <div><strong id="pendingCount">0</strong><span>pendientes</span></div>
+      </div>
+      <label>Relays (uno por línea)
+        <textarea id="relayInput" rows="5"></textarea>
+      </label>
+      <p class="helper">La identidad es una clave anónima generada en este dispositivo. La clave privada no sale de Android.</p>
+      <div class="dialog-actions"><button id="resetRelays" class="secondary">Restaurar</button><button id="saveRelays" class="primary small">Guardar y sincronizar</button></div>
+    </section>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="questions.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
