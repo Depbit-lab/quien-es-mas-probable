@@ -1,6 +1,6 @@
 # ¿Quién es más probable que…?
 
-Juego de preguntas para grupos, en Android. Funciona **sin conexión**: las 150 preguntas
+Juego de preguntas para grupos, en Android. Funciona **sin conexión**: las 172 preguntas
 iniciales viajan dentro del APK. La parte comunitaria usa Nostr y es opcional.
 
 Creado por **Depbit**.

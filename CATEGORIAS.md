@@ -17,6 +17,7 @@ Depbit editando este documento.
 | Policía, delitos y cárcel | Multas, peleas, aduanas y malas decisiones legales. |
 | Coches y trabajo | Jefes, despidos, carnets y accidentes tontos. |
 | Fama, familia y política | Suegras, herencias, discusiones de sobremesa y el grupo de la familia. |
+| Dinero | Deudas, tacañería, estafas, herencias y cuentas a medias. |
 | Nuclear | Sin límites. La categoría que rompe amistades. |
 
 ## Propuestas pendientes
