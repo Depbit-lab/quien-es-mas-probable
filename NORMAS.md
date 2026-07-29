@@ -19,8 +19,13 @@ existen para suavizarlo, sino para marcar la línea a partir de la cual deja de 
 
 ## Cómo se aplican
 
-La moderación no depende de una autoridad central, porque las preguntas viajan por relays
-Nostr independientes. Funciona en tres capas:
+Antes de nada hay un requisito de entrada: solo se puede añadir una pregunta a una sección
+después de haber visto todas las preguntas integradas de esa sección. Quien propone ya ha leído
+lo que hay, así que la repetida por descuido casi desaparece. Para publicar en cualquier sección
+hay que haberlas terminado todas.
+
+A partir de ahí, la moderación no depende de una autoridad central, porque las preguntas viajan
+por relays Nostr independientes. Funciona en tres capas:
 
 1. **Denuncia individual.** El botón ⚑ de cada pregunta la oculta en tu móvil de inmediato y
    publica una denuncia firmada. También puedes bloquear a quien la escribió: sus preguntas
@@ -43,6 +48,10 @@ seguir existiendo en relays de terceros sobre los que este proyecto no manda. No
 ninguna garantía de eliminación.
 
 **La ocultación es reactiva.** Requiere que alguien vea la pregunta primero y la denuncie.
+
+**El requisito de terminar la sección se comprueba en el móvil.** Frena la pregunta repetida por
+descuido y obliga a leer el mazo antes de proponer, pero quien modifique la app puede saltárselo.
+Contra eso siguen estando la denuncia y el umbral comunitario.
 
 ## Si encuentras algo grave
 

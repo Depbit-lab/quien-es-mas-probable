@@ -12,7 +12,7 @@ Creado por **Depbit**.
 - Mazos: **Para ti**, **Populares**, **Nuevas**, **Mis favoritas** y **Mezcla completa**.
 - «Para ti» aprende de las categorías que votas y de la popularidad comunitaria.
 - «Mis favoritas» reúne las preguntas que has votado con ▲, para repetirlas en la próxima quedada.
-- Añadir preguntas nuevas desde el móvil.
+- Añadir preguntas nuevas desde el móvil, una vez terminada esa sección.
 - Sincronización opcional con varios relays Nostr.
 - Eventos Nostr firmados en código nativo Android. La clave privada se guarda en
   SharedPreferences y nunca se expone al WebView.
@@ -22,6 +22,12 @@ Creado por **Depbit**.
 - Denunciar preguntas y bloquear autores, con ocultación automática por umbral comunitario.
 
 ## Moderación
+
+Para añadir una pregunta a una sección hay que haber visto antes todas las preguntas integradas de
+esa sección. Es la forma más simple de evitar las repetidas: quien propone ya conoce lo que hay
+dentro. Solo cuenta el mazo del APK, así que el listón es fijo, se comprueba sin conexión y nadie
+puede subirlo inundando una categoría desde los relays. Terminar las siete secciones deja abierto
+el mazo entero.
 
 Las preguntas de la comunidad se ocultan solas cuando 3 personas distintas las denuncian, o
 cuando acumulan 5 votos o más con menos del 25 % positivos. Cada jugador puede además ocultar
@@ -36,7 +42,8 @@ preguntas basura que lleguen de la red. Para proponer una categoría nueva, cons
 [CATEGORIAS.md](CATEGORIAS.md).
 
 Para proponer **preguntas** dentro de una categoría existente no hace falta pasar por GitHub:
-usa el botón **＋ Añadir** de la app y se publicará en los relays.
+usa el botón **＋ Añadir** de la app y se publicará en los relays. El desplegable solo ofrece las
+categorías que ya has terminado de jugar; las demás aparecen con las preguntas que te faltan.
 
 ## Protocolo comunitario experimental
 

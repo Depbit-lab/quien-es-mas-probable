@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const APP_VERSION = '0.5.0';
+  const APP_VERSION = '0.6.0';
   const APP_TITLE = '¿Quién es más probable que…?';
   const QUESTION_TAG = 'sinfiltro-question-v1';
   const VOTE_TAG = 'sinfiltro-vote-v1';
@@ -18,6 +18,14 @@
     'wss://relay.primal.net'
   ];
   const CATEGORIES = [...new Set(window.BUILTIN_QUESTIONS.map(q => q.category))];
+  // Para publicar en una seccion hay que haber visto antes su mazo integrado entero. Cuentan solo
+  // las preguntas del APK: la lista es fija, se comprueba sin conexion y nadie puede subir el
+  // liston inundando una categoria desde los relays. Si una version futura trae mas preguntas
+  // integradas, la seccion se cierra hasta verlas, que es justo lo que se busca: quien propone
+  // sabe lo que ya hay dentro.
+  const BUILTIN_IDS_BY_CATEGORY = Object.fromEntries(
+    CATEGORIES.map(c => [c, window.BUILTIN_QUESTIONS.filter(q => q.category === c).map(q => q.id)])
+  );
 
   const STORAGE = {
     custom: 'sf_custom_questions_v2',
@@ -29,7 +37,8 @@
     used: 'sf_used_v2',
     hidden: 'sf_hidden_v2',
     blocked: 'sf_blocked_v2',
-    reportEvents: 'sf_report_events_v2'
+    reportEvents: 'sf_report_events_v2',
+    seen: 'sf_seen_v1'
   };
 
   const els = Object.fromEntries([
@@ -38,11 +47,15 @@
     'newQuestion','newCategory','publishQuestion','communityDialog','closeCommunity','relayInput','resetRelays',
     'saveRelays','communityQuestions','communityVotes','pendingCount','toast','addError','relayError',
     'closeAdd','cancelAdd','reportButton','reportDialog','reportForm','reportQuestion','reportReason',
-    'blockRow','blockAuthor','reportError','closeReport','cancelReport','sendReport','hiddenCount','clearHidden'
+    'blockRow','blockAuthor','reportError','closeReport','cancelReport','sendReport','hiddenCount','clearHidden',
+    'addGate'
   ].map(id => [id, document.getElementById(id)]));
 
   let current = null;
   let used = new Set(load(STORAGE.used, []));
+  // «used» se vacia al cambiar de mazo y al agotar el pool, asi que no sirve para llevar la
+  // cuenta de lo visto: «seen» es el registro permanente, y solo guarda ids del mazo integrado.
+  let seen = new Set(load(STORAGE.seen, []));
   let localVotes = load(STORAGE.votes, {});
   let customQuestions = load(STORAGE.custom, []);
   let communityQuestions = load(STORAGE.communityQuestions, []);
@@ -200,12 +213,14 @@
     if(!pool.length){ toast('Todavía no hay preguntas en este filtro'); return; }
     current=weightedPick(pool);
     used.add(current.id); save(STORAGE.used,[...used]);
+    const justOpened=markSeen(current);
     els.question.textContent=current.text;
     els.question.classList.remove('empty');
     els.badge.textContent=current.category;
     els.next.textContent='Otra pregunta';
     updateCard();
     if(navigator.vibrate) navigator.vibrate(30);
+    if(justOpened) toast(`Sección terminada: ya puedes añadir preguntas a «${current.category}»`);
   }
   function updateCard() {
     const pool=filteredQuestions();
@@ -328,8 +343,50 @@
   }
   function setStatus(state,text){els.communityStatus.className=`status ${state}`;els.statusText.textContent=text;}
 
+  function sectionProgress(category){
+    const ids=BUILTIN_IDS_BY_CATEGORY[category]||[];
+    return {total:ids.length,done:ids.filter(id=>seen.has(id)).length};
+  }
+  function isSectionOpen(category){ const p=sectionProgress(category); return p.total>0&&p.done>=p.total; }
+  // Devuelve true solo cuando este vistazo termina la seccion, para poder avisar en el momento.
+  function markSeen(q){
+    if(!q||q.source!=='builtin'||seen.has(q.id))return false;
+    const wasOpen=isSectionOpen(q.category);
+    seen.add(q.id); save(STORAGE.seen,[...seen]);
+    return !wasOpen&&isSectionOpen(q.category);
+  }
+  function refreshCategoryOptions(){
+    const open=CATEGORIES.filter(isSectionOpen);
+    [...els.newCategory.options].forEach(option=>{
+      const p=sectionProgress(option.value);
+      option.disabled=!open.includes(option.value);
+      option.textContent=option.disabled?`${option.value} · te faltan ${p.total-p.done}`:option.value;
+    });
+    if(!open.includes(els.newCategory.value)) els.newCategory.value=open[0]||'';
+    return open;
+  }
+  function openAdd(){
+    const open=refreshCategoryOptions();
+    els.addGate.textContent=!open.length?''
+      :open.length===CATEGORIES.length?'Has terminado todas las secciones: puedes publicar en cualquiera.'
+      :`Puedes publicar en ${open.length} de ${CATEGORIES.length} secciones. Las demás se abren cuando veas todas sus preguntas.`;
+    showFormError(els.addError,open.length?'':'Todavía no has terminado ninguna sección. Elige una en «Mazo», ve sacando preguntas hasta verlas todas y podrás añadir las tuyas a esa sección.');
+    els.newQuestion.disabled=!open.length;
+    els.publishQuestion.disabled=!open.length;
+    els.addDialog.showModal();
+  }
   async function addQuestion(){
-    const text=normalizeQuestion(els.newQuestion.value); const category=els.newCategory.value;
+    const category=els.newCategory.value;
+    // Respaldo: el desplegable ya deja fuera las secciones sin terminar, pero el estado puede
+    // haber cambiado con el dialogo abierto y la comprobacion de verdad va aqui.
+    if(!isSectionOpen(category)){
+      const p=sectionProgress(category);
+      showFormError(els.addError,category
+        ?`Todavía no has terminado «${category}»: te faltan ${p.total-p.done} preguntas por ver.`
+        :'Termina una sección entera antes de añadir preguntas.');
+      return;
+    }
+    const text=normalizeQuestion(els.newQuestion.value);
     if(text.length<18){showFormError(els.addError,'La pregunta es demasiado corta. Escribe unas cuantas palabras más.');return;}
     const normalized=text.toLocaleLowerCase('es-ES').replace(/[^a-záéíóúüñ0-9]+/g,' ').trim();
     if(allQuestions().some(q=>q.text.toLocaleLowerCase('es-ES').replace(/[^a-záéíóúüñ0-9]+/g,' ').trim()===normalized)){showFormError(els.addError,'Esa pregunta ya está en el mazo.');return;}
@@ -395,7 +452,7 @@
   els.downvote.addEventListener('click',()=>vote(-1));
   els.mode.addEventListener('change',()=>{used.clear();save(STORAGE.used,[]);drawQuestion()});
   els.noRepeat.addEventListener('change',updateCard);
-  els.addQuestion.addEventListener('click',()=>{showFormError(els.addError,'');els.addDialog.showModal()});
+  els.addQuestion.addEventListener('click',openAdd);
   els.closeAdd.addEventListener('click',()=>els.addDialog.close());
   els.cancelAdd.addEventListener('click',()=>els.addDialog.close());
   els.newQuestion.addEventListener('input',()=>showFormError(els.addError,''));

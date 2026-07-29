@@ -54,3 +54,6 @@ con la plantilla «Proponer categoría» si no sabes usar Git.
 Si lo que quieres es añadir preguntas a una categoría que ya existe, no hace falta pasar por
 aquí: hazlo desde el botón **＋ Añadir** de la propia app. La pregunta se firma y se publica en
 los relays Nostr, y el resto de jugadores la recibirá al sincronizar.
+
+Eso sí, la app solo deja añadir preguntas a las categorías cuyas preguntas integradas hayas visto
+ya todas. Es un requisito por categoría: terminar «Dinero» abre «Dinero», no las demás.
