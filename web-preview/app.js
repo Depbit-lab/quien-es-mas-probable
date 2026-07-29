@@ -1,7 +1,8 @@
 (() => {
   'use strict';
 
-  const APP_VERSION = '0.1.0';
+  const APP_VERSION = '0.2.0';
+  const APP_TITLE = '¿Quién es más probable que…?';
   const QUESTION_TAG = 'sinfiltro-question-v1';
   const VOTE_TAG = 'sinfiltro-vote-v1';
   const EVENT_KIND = 30078;
@@ -115,6 +116,7 @@
       pool = popular.length ? popular : pool;
     }
     if (mode === 'Nuevas') pool = pool.filter(q => q.source !== 'builtin').sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+    if (mode === 'Favoritas') pool = pool.filter(q => localVotes[q.id] === 1);
     return pool;
   }
   function weightedPick(pool) {
@@ -134,7 +136,20 @@
     for(const [q,w] of weighted){ r-=w; if(r<=0)return q; }
     return weighted.at(-1)?.[0];
   }
+  function showEmptyState(badge,message){
+    current=null;
+    els.question.textContent=message;
+    els.question.classList.add('empty');
+    els.badge.textContent=badge;
+    els.next.textContent='Sacar pregunta';
+    updateCard();
+  }
   function drawQuestion() {
+    // Sin votos positivos todavia, «Mis favoritas» explica como se llena en vez de quedarse en blanco.
+    if(els.mode.value==='Favoritas'&&!filteredQuestions().length){
+      showEmptyState('Mis favoritas','Juega y vota antes. Cuando una pregunta te guste, márcala con ▲ y se guardará aquí para la próxima partida.');
+      return;
+    }
     let pool=filteredQuestions();
     if(els.noRepeat.checked) pool=pool.filter(q=>!used.has(q.id));
     if(!pool.length){ used.clear(); save(STORAGE.used,[]); pool=filteredQuestions(); }
@@ -142,6 +157,7 @@
     current=weightedPick(pool);
     used.add(current.id); save(STORAGE.used,[...used]);
     els.question.textContent=current.text;
+    els.question.classList.remove('empty');
     els.badge.textContent=current.category;
     els.next.textContent='Otra pregunta';
     updateCard();
@@ -298,7 +314,7 @@
   els.noRepeat.addEventListener('change',updateCard);
   els.addQuestion.addEventListener('click',()=>els.addDialog.showModal());
   els.addForm.addEventListener('submit',e=>{e.preventDefault();addQuestion()});
-  els.shareQuestion.addEventListener('click',()=>current?shareText('Sin Filtro',`${current.text}\n\nVota tú también en Sin Filtro.`):toast('Saca una pregunta primero'));
+  els.shareQuestion.addEventListener('click',()=>current?shareText(APP_TITLE,`${current.text}\n\n${APP_TITLE} · Vota tú también.`):toast('Saca una pregunta primero'));
   els.sync.addEventListener('click',()=>syncCommunity());
   els.shareApp.addEventListener('click',()=>{if(nativeCall('shareApp')===null)toast('El APK se puede compartir desde la aplicación Android')});
   els.communityStatus.addEventListener('click',openCommunity);

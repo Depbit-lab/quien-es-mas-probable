@@ -15,7 +15,7 @@ public class ApkFileProvider extends ContentProvider {
     @Override public boolean onCreate() { return true; }
     private File resolve(Uri uri) throws FileNotFoundException {
         if (!"apk".equals(uri.getPathSegments().isEmpty() ? "" : uri.getPathSegments().get(0))) throw new FileNotFoundException();
-        File file = new File(new File(getContext().getCacheDir(), "shared"), "SinFiltro.apk");
+        File file = new File(new File(getContext().getCacheDir(), "shared"), "QuienEsMasProbable.apk");
         if (!file.exists()) throw new FileNotFoundException();
         return file;
     }
@@ -24,7 +24,7 @@ public class ApkFileProvider extends ContentProvider {
     @Override public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
         try {
             File file=resolve(uri); MatrixCursor c=new MatrixCursor(new String[]{OpenableColumns.DISPLAY_NAME,OpenableColumns.SIZE});
-            c.addRow(new Object[]{"SinFiltro.apk",file.length()}); return c;
+            c.addRow(new Object[]{"QuienEsMasProbable.apk",file.length()}); return c;
         } catch(Exception e){ return null; }
     }
     @Override public int delete(Uri uri,String selection,String[] selectionArgs){return 0;}

@@ -4,14 +4,14 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
   <meta name="theme-color" content="#0b0b0e">
-  <title>Sin Filtro</title>
+  <title>¿Quién es más probable que…?</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <main class="app">
     <header class="topbar">
       <div>
-        <h1>Sin Filtro</h1>
+        <h1>¿Quién es más probable que…?</h1>
         <p>Preguntas incómodas. Votos sinceros.</p>
       </div>
       <button id="communityStatus" class="status offline" type="button" aria-label="Estado de la comunidad">
@@ -26,6 +26,7 @@
           <option value="Para ti">Para ti</option>
           <option value="Popular">Populares</option>
           <option value="Nuevas">Nuevas</option>
+          <option value="Favoritas">Mis favoritas</option>
           <option value="Todas">Mezcla completa</option>
         </select>
       </label>
@@ -61,6 +62,7 @@
     </section>
 
     <p class="notice">Funciona sin conexión. La comunidad Nostr es opcional. Solo para adultos.</p>
+    <footer class="credits">Creado por <strong>Depbit</strong> · v0.2.0</footer>
   </main>
 
   <dialog id="addDialog">

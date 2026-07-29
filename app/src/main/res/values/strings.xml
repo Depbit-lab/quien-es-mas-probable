@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Nombre corto para el launcher: el titulo completo se trunca bajo el icono. -->
+    <string name="app_name">¿Quién es más probable?</string>
+    <string name="share_app_chooser">Compartir el juego</string>
+    <string name="share_text_chooser">Compartir con</string>
+</resources>

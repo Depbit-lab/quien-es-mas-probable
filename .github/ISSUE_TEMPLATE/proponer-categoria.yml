@@ -1,0 +1,50 @@
+name: Proponer categoría
+description: Sugiere una categoría nueva de preguntas para el juego.
+title: "[Categoría] "
+labels: ["categoría"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Antes de nada, echa un vistazo a [CATEGORIAS.md](../blob/main/CATEGORIAS.md) para ver
+        las que ya existen y qué hace buena a una categoría.
+
+        Si lo que quieres es añadir **preguntas sueltas** a una categoría que ya existe, no
+        hace falta abrir nada aquí: usa el botón **＋ Añadir** dentro de la app.
+  - type: input
+    id: nombre
+    attributes:
+      label: Nombre de la categoría
+      placeholder: Viajes y aeropuertos
+    validations:
+      required: true
+  - type: textarea
+    id: descripcion
+    attributes:
+      label: Descripción
+      description: Una línea explicando qué entra y qué no entra en esta categoría.
+      placeholder: Vuelos perdidos, maletas, aduanas y compañeros de viaje insoportables.
+    validations:
+      required: true
+  - type: textarea
+    id: ejemplos
+    attributes:
+      label: Preguntas de ejemplo
+      description: |
+        Escribe al menos tres. Deben empezar por «¿» y funcionar señalando a alguien del grupo.
+        Cuantas más pongas, más fácil es aprobar la categoría.
+      placeholder: |
+        ¿Quién es más probable que pierda el vuelo por quedarse en el duty free?
+        ¿Quién es más probable que discuta con el personal de facturación?
+        ¿Quién es más probable que se deje el pasaporte en casa?
+    validations:
+      required: true
+  - type: checkboxes
+    id: comprobaciones
+    attributes:
+      label: Comprobaciones
+      options:
+        - label: He mirado las categorías activas y esta no se solapa con ninguna.
+          required: true
+        - label: Creo que da para 15 preguntas o más.
+          required: true

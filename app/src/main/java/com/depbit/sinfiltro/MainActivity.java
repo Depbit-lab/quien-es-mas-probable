@@ -43,7 +43,7 @@ public class MainActivity extends Activity {
         settings.setAllowFileAccess(true);
         settings.setAllowContentAccess(true);
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
-        settings.setUserAgentString(settings.getUserAgentString() + " SinFiltro/0.1.0");
+        settings.setUserAgentString(settings.getUserAgentString() + " QuienEsMasProbable/0.2.0");
         webView.setWebViewClient(new WebViewClient() {
             @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 Uri uri = request.getUrl();
@@ -114,7 +114,7 @@ public class MainActivity extends Activity {
             runOnUiThread(() -> {
                 Intent intent = new Intent(Intent.ACTION_SEND);
                 intent.setType("text/plain"); intent.putExtra(Intent.EXTRA_SUBJECT, title); intent.putExtra(Intent.EXTRA_TEXT, text);
-                startActivity(Intent.createChooser(intent, "Compartir con"));
+                startActivity(Intent.createChooser(intent, getString(R.string.share_text_chooser)));
             });
         }
 
@@ -123,13 +123,13 @@ public class MainActivity extends Activity {
                 try {
                     File source = new File(getApplicationInfo().sourceDir);
                     File dir = new File(getCacheDir(), "shared"); if (!dir.exists()) dir.mkdirs();
-                    File target = new File(dir, "SinFiltro.apk"); copy(source, target);
-                    Uri uri = Uri.parse("content://" + getPackageName() + ".files/apk/SinFiltro.apk");
+                    File target = new File(dir, "QuienEsMasProbable.apk"); copy(source, target);
+                    Uri uri = Uri.parse("content://" + getPackageName() + ".files/apk/QuienEsMasProbable.apk");
                     Intent intent = new Intent(Intent.ACTION_SEND);
                     intent.setType("application/vnd.android.package-archive");
                     intent.putExtra(Intent.EXTRA_STREAM, uri);
                     intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    startActivity(Intent.createChooser(intent, "Compartir Sin Filtro"));
+                    startActivity(Intent.createChooser(intent, getString(R.string.share_app_chooser)));
                 } catch (Exception ignored) {}
             });
         }
