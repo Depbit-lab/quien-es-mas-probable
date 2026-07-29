@@ -62,12 +62,12 @@
     </section>
 
     <p class="notice">Funciona sin conexión. La comunidad Nostr es opcional. Solo para adultos.</p>
-    <footer class="credits">Creado por <strong>Depbit</strong> · v0.2.0</footer>
+    <footer class="credits">Creado por <strong>Depbit</strong> · v0.2.1</footer>
   </main>
 
   <dialog id="addDialog">
     <form id="addForm" method="dialog" class="dialog-card">
-      <div class="dialog-head"><h2>Nueva pregunta</h2><button class="close" value="cancel" aria-label="Cerrar">×</button></div>
+      <div class="dialog-head"><h2>Nueva pregunta</h2><button type="button" id="closeAdd" class="close" aria-label="Cerrar">×</button></div>
       <label>Pregunta
         <textarea id="newQuestion" maxlength="220" required placeholder="¿Quién tiene más probabilidades de…?"></textarea>
       </label>
@@ -75,7 +75,8 @@
         <select id="newCategory"></select>
       </label>
       <p class="helper">Se guarda primero en el móvil. Con internet, se firma y se publica en varios relays Nostr.</p>
-      <div class="dialog-actions"><button value="cancel" class="secondary">Cancelar</button><button id="publishQuestion" value="default" class="primary small">Añadir</button></div>
+      <p id="addError" class="form-error" role="alert"></p>
+      <div class="dialog-actions"><button type="button" id="cancelAdd" class="secondary">Cancelar</button><button id="publishQuestion" value="default" class="primary small">Añadir</button></div>
     </form>
   </dialog>
 
@@ -91,7 +92,8 @@
         <textarea id="relayInput" rows="5"></textarea>
       </label>
       <p class="helper">La identidad es una clave anónima generada en este dispositivo. La clave privada no sale de Android.</p>
-      <div class="dialog-actions"><button id="resetRelays" class="secondary">Restaurar</button><button id="saveRelays" class="primary small">Guardar y sincronizar</button></div>
+      <p id="relayError" class="form-error" role="alert"></p>
+      <div class="dialog-actions"><button type="button" id="resetRelays" class="secondary">Restaurar</button><button type="button" id="saveRelays" class="primary small">Guardar y sincronizar</button></div>
     </section>
   </dialog>
 

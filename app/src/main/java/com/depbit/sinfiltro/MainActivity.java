@@ -43,7 +43,7 @@ public class MainActivity extends Activity {
         settings.setAllowFileAccess(true);
         settings.setAllowContentAccess(true);
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
-        settings.setUserAgentString(settings.getUserAgentString() + " QuienEsMasProbable/0.2.0");
+        settings.setUserAgentString(settings.getUserAgentString() + " QuienEsMasProbable/0.2.1");
         webView.setWebViewClient(new WebViewClient() {
             @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 Uri uri = request.getUrl();
@@ -58,7 +58,15 @@ public class MainActivity extends Activity {
     }
 
     @Override public void onBackPressed() {
-        if (webView != null && webView.canGoBack()) webView.goBack(); else super.onBackPressed();
+        if (webView == null) { super.onBackPressed(); return; }
+        // Un <dialog> modal no crea historial, asi que sin esto el boton atras cerraria la app
+        // dejando al usuario atrapado en el formulario.
+        webView.evaluateJavascript(
+            "(function(){var d=document.querySelector('dialog[open]');if(!d)return false;d.close();return true;})()",
+            value -> {
+                if ("true".equals(value)) return;
+                if (webView.canGoBack()) webView.goBack(); else finish();
+            });
     }
 
     public class AndroidBridge {

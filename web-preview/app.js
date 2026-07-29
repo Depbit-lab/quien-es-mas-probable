@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const APP_VERSION = '0.2.0';
+  const APP_VERSION = '0.2.1';
   const APP_TITLE = '¿Quién es más probable que…?';
   const QUESTION_TAG = 'sinfiltro-question-v1';
   const VOTE_TAG = 'sinfiltro-vote-v1';
@@ -27,7 +27,8 @@
     'mode','noRepeat','badge','question','remaining','rankInfo','upvote','downvote','upCount','downCount',
     'next','addQuestion','shareQuestion','sync','shareApp','communityStatus','statusText','addDialog','addForm',
     'newQuestion','newCategory','publishQuestion','communityDialog','closeCommunity','relayInput','resetRelays',
-    'saveRelays','communityQuestions','communityVotes','pendingCount','toast'
+    'saveRelays','communityQuestions','communityVotes','pendingCount','toast','addError','relayError',
+    'closeAdd','cancelAdd'
   ].map(id => [id, document.getElementById(id)]));
 
   let current = null;
@@ -65,6 +66,17 @@
     toastTimer = setTimeout(() => els.toast.classList.remove('show'), 2300);
   }
   function cleanText(text) { return text.trim().replace(/\s+/g, ' '); }
+  // Un <dialog> modal se dibuja en la top layer, por encima de cualquier z-index: un toast
+  // lanzado con el dialogo abierto queda oculto tras el fondo. Los errores van dentro.
+  function showFormError(element,message){ element.textContent = message || ''; }
+  // El teclado de Android esconde «¿» y «?», asi que los ponemos nosotros en vez de rechazar.
+  function normalizeQuestion(raw){
+    let text = cleanText(raw);
+    if (!text) return '';
+    if (!text.startsWith('¿')) text = '¿' + text.replace(/^[¿¡?!\s]+/, '');
+    if (!text.endsWith('?')) text = text.replace(/[.,;:\s]+$/, '') + '?';
+    return text;
+  }
   function now() { return Math.floor(Date.now() / 1000); }
   function uuid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 9); }
   function allQuestions() {
@@ -278,11 +290,11 @@
   function setStatus(state,text){els.communityStatus.className=`status ${state}`;els.statusText.textContent=text;}
 
   async function addQuestion(){
-    const text=cleanText(els.newQuestion.value); const category=els.newCategory.value;
-    if(text.length<18){toast('La pregunta es demasiado corta');return;}
-    if(!text.startsWith('¿')){toast('Empieza la pregunta con ¿');return;}
+    const text=normalizeQuestion(els.newQuestion.value); const category=els.newCategory.value;
+    if(text.length<18){showFormError(els.addError,'La pregunta es demasiado corta. Escribe unas cuantas palabras más.');return;}
     const normalized=text.toLocaleLowerCase('es-ES').replace(/[^a-záéíóúüñ0-9]+/g,' ').trim();
-    if(allQuestions().some(q=>q.text.toLocaleLowerCase('es-ES').replace(/[^a-záéíóúüñ0-9]+/g,' ').trim()===normalized)){toast('Esa pregunta ya existe');return;}
+    if(allQuestions().some(q=>q.text.toLocaleLowerCase('es-ES').replace(/[^a-záéíóúüñ0-9]+/g,' ').trim()===normalized)){showFormError(els.addError,'Esa pregunta ya está en el mazo.');return;}
+    showFormError(els.addError,'');
     const id=`n_${pubkey.slice(0,12)}_${uuid()}`;
     const q={id,text,category,source:'custom',createdAt:now(),author:pubkey,pending:true};
     customQuestions.push(q);save(STORAGE.custom,customQuestions);els.newQuestion.value='';els.addDialog.close();current=q;els.question.textContent=q.text;els.badge.textContent=q.category;updateCard();toast('Pregunta añadida al móvil');
@@ -300,10 +312,11 @@
     els.communityVotes.textContent=Object.keys(voteEvents).length;
     els.pendingCount.textContent=pendingEvents.length;
   }
-  function openCommunity(){els.relayInput.value=relays.join('\n');updateCommunityStats();els.communityDialog.showModal();}
+  function openCommunity(){els.relayInput.value=relays.join('\n');showFormError(els.relayError,'');updateCommunityStats();els.communityDialog.showModal();}
   function saveRelaySettings(){
     const values=els.relayInput.value.split(/\s+/).map(x=>x.trim()).filter(x=>/^wss:\/\//.test(x));
-    if(!values.length){toast('Añade al menos un relay wss://');return;}
+    if(!values.length){showFormError(els.relayError,'Añade al menos un relay que empiece por wss://');return;}
+    showFormError(els.relayError,'');
     relays=[...new Set(values)].slice(0,8);save(STORAGE.relays,relays);els.communityDialog.close();syncCommunity();
   }
 
@@ -312,7 +325,10 @@
   els.downvote.addEventListener('click',()=>vote(-1));
   els.mode.addEventListener('change',()=>{used.clear();save(STORAGE.used,[]);drawQuestion()});
   els.noRepeat.addEventListener('change',updateCard);
-  els.addQuestion.addEventListener('click',()=>els.addDialog.showModal());
+  els.addQuestion.addEventListener('click',()=>{showFormError(els.addError,'');els.addDialog.showModal()});
+  els.closeAdd.addEventListener('click',()=>els.addDialog.close());
+  els.cancelAdd.addEventListener('click',()=>els.addDialog.close());
+  els.newQuestion.addEventListener('input',()=>showFormError(els.addError,''));
   els.addForm.addEventListener('submit',e=>{e.preventDefault();addQuestion()});
   els.shareQuestion.addEventListener('click',()=>current?shareText(APP_TITLE,`${current.text}\n\n${APP_TITLE} · Vota tú también.`):toast('Saca una pregunta primero'));
   els.sync.addEventListener('click',()=>syncCommunity());
