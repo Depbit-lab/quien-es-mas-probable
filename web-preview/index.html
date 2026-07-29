@@ -35,7 +35,10 @@
 
     <section class="question-card" aria-live="polite">
       <div class="card-head">
-        <span id="badge" class="badge">Mezcla completa</span>
+        <div class="head-left">
+          <span id="badge" class="badge">Mezcla completa</span>
+          <button id="reportButton" class="report-button" type="button" aria-label="Denunciar esta pregunta" title="Denunciar">⚑</button>
+        </div>
         <div class="vote-stack" aria-label="Votar pregunta">
           <button id="upvote" class="vote-button" type="button" aria-label="Me gusta">
             <span class="arrow">▲</span><span id="upCount">0</span>
@@ -62,7 +65,7 @@
     </section>
 
     <p class="notice">Funciona sin conexión. La comunidad Nostr es opcional. Solo para adultos.</p>
-    <footer class="credits">Creado por <strong>Depbit</strong> · v0.3.0</footer>
+    <footer class="credits">Creado por <strong>Depbit</strong> · v0.4.0</footer>
   </main>
 
   <dialog id="addDialog">
@@ -86,8 +89,10 @@
       <div class="stats-grid">
         <div><strong id="communityQuestions">0</strong><span>preguntas</span></div>
         <div><strong id="communityVotes">0</strong><span>votos</span></div>
+        <div><strong id="hiddenCount">0</strong><span>ocultas</span></div>
         <div><strong id="pendingCount">0</strong><span>pendientes</span></div>
       </div>
+      <button type="button" id="clearHidden" class="secondary">Volver a mostrar las ocultas</button>
       <label>Relays (uno por línea)
         <textarea id="relayInput" rows="5"></textarea>
       </label>
@@ -95,6 +100,26 @@
       <p id="relayError" class="form-error" role="alert"></p>
       <div class="dialog-actions"><button type="button" id="resetRelays" class="secondary">Restaurar</button><button type="button" id="saveRelays" class="primary small">Guardar y sincronizar</button></div>
     </section>
+  </dialog>
+
+  <dialog id="reportDialog">
+    <form id="reportForm" method="dialog" class="dialog-card">
+      <div class="dialog-head"><h2>Denunciar</h2><button type="button" id="closeReport" class="close" aria-label="Cerrar">×</button></div>
+      <p id="reportQuestion" class="report-quote"></p>
+      <label>Motivo
+        <select id="reportReason">
+          <option value="ilegal">Contenido ilegal o que involucra a menores</option>
+          <option value="odio">Odio, acoso o amenazas</option>
+          <option value="datos">Datos personales de alguien real</option>
+          <option value="spam">Spam o sin sentido</option>
+          <option value="otro">Otro motivo</option>
+        </select>
+      </label>
+      <label id="blockRow" class="check-inline"><input type="checkbox" id="blockAuthor"><span>Bloquear también a quien la publicó</span></label>
+      <p class="helper">Desaparecerá de tu móvil ahora mismo. Cuando varias personas denuncian la misma pregunta, deja de mostrarse a todo el mundo.</p>
+      <p id="reportError" class="form-error" role="alert"></p>
+      <div class="dialog-actions"><button type="button" id="cancelReport" class="secondary">Cancelar</button><button id="sendReport" value="default" class="primary small">Denunciar</button></div>
+    </form>
   </dialog>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>

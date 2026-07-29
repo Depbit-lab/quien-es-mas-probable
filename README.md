@@ -19,6 +19,15 @@ Creado por **Depbit**.
 - Cola offline para preguntas y votos pendientes.
 - Compartir preguntas por WhatsApp u otras apps.
 - Compartir el propio APK desde la aplicación.
+- Denunciar preguntas y bloquear autores, con ocultación automática por umbral comunitario.
+
+## Moderación
+
+Las preguntas de la comunidad se ocultan solas cuando 3 personas distintas las denuncian, o
+cuando acumulan 5 votos o más con menos del 25 % positivos. Cada jugador puede además ocultar
+una pregunta y bloquear a su autor desde el botón ⚑, sin esperar a nadie.
+
+Las reglas y los límites reales del sistema están en [NORMAS.md](NORMAS.md).
 
 ## Categorías
 
@@ -35,6 +44,7 @@ Se usa el kind NIP-78 `30078`:
 
 - Preguntas: tag `t = sinfiltro-question-v1`, tag `d = q:<id>`.
 - Votos: tag `t = sinfiltro-vote-v1`, tag `d = v:<id-pregunta>`.
+- Denuncias: tag `t = sinfiltro-report-v1`, tag `d = r:<id-pregunta>`.
 
 Los votos son eventos direccionables, por lo que cada clave pública mantiene un único voto
 vigente por pregunta.

@@ -1,11 +1,17 @@
 (() => {
   'use strict';
 
-  const APP_VERSION = '0.3.0';
+  const APP_VERSION = '0.4.0';
   const APP_TITLE = '¿Quién es más probable que…?';
   const QUESTION_TAG = 'sinfiltro-question-v1';
   const VOTE_TAG = 'sinfiltro-vote-v1';
+  const REPORT_TAG = 'sinfiltro-report-v1';
   const EVENT_KIND = 30078;
+  // Ocultacion automatica: hace falta un minimo de votantes distintos antes de enterrar nada,
+  // porque si no dos votos negativos tempranos matarian una pregunta buena.
+  const BURY_MIN_VOTERS = 5;
+  const BURY_MAX_RATIO = 0.25;
+  const BURY_MIN_REPORTS = 3;
   const DEFAULT_RELAYS = [
     'wss://relay.damus.io',
     'wss://nos.lol',
@@ -20,7 +26,10 @@
     voteEvents: 'sf_vote_events_v2',
     pending: 'sf_pending_events_v2',
     relays: 'sf_relays_v2',
-    used: 'sf_used_v2'
+    used: 'sf_used_v2',
+    hidden: 'sf_hidden_v2',
+    blocked: 'sf_blocked_v2',
+    reportEvents: 'sf_report_events_v2'
   };
 
   const els = Object.fromEntries([
@@ -28,7 +37,8 @@
     'next','addQuestion','shareQuestion','sync','shareApp','communityStatus','statusText','addDialog','addForm',
     'newQuestion','newCategory','publishQuestion','communityDialog','closeCommunity','relayInput','resetRelays',
     'saveRelays','communityQuestions','communityVotes','pendingCount','toast','addError','relayError',
-    'closeAdd','cancelAdd'
+    'closeAdd','cancelAdd','reportButton','reportDialog','reportForm','reportQuestion','reportReason',
+    'blockRow','blockAuthor','reportError','closeReport','cancelReport','sendReport','hiddenCount','clearHidden'
   ].map(id => [id, document.getElementById(id)]));
 
   let current = null;
@@ -38,6 +48,9 @@
   let communityQuestions = load(STORAGE.communityQuestions, []);
   let voteEvents = load(STORAGE.voteEvents, {}); // key pubkey:question -> event summary
   let pendingEvents = load(STORAGE.pending, []);
+  let hidden = new Set(load(STORAGE.hidden, []));
+  let blocked = new Set(load(STORAGE.blocked, []));
+  let reportEvents = load(STORAGE.reportEvents, {});
   let relays = load(STORAGE.relays, DEFAULT_RELAYS);
   let syncing = false;
   let toastTimer;
@@ -117,10 +130,29 @@
     });
     return scores;
   }
+  function reportersFor(id) {
+    const seen = new Set();
+    Object.values(reportEvents).forEach(r => { if (r && r.questionId === id) seen.add(r.pubkey); });
+    return seen.size;
+  }
+  // El voto negativo entierra de verdad, no solo baja en el orden. Solo se aplica al contenido
+  // de la comunidad: el mazo integrado esta curado y no se autooculta.
+  function isVisible(q, counts) {
+    if (hidden.has(q.id)) return false;
+    if (q.author && blocked.has(q.author)) return false;
+    if (q.source === 'builtin') return true;
+    if (reportersFor(q.id) >= BURY_MIN_REPORTS) return false;
+    const c = counts[q.id] || {up:0,down:0}, n = c.up + c.down;
+    return !(n >= BURY_MIN_VOTERS && c.up / n < BURY_MAX_RATIO);
+  }
+  function hiddenTotal() {
+    const counts = latestVotesByQuestion();
+    return allQuestions().filter(q => !isVisible(q, counts)).length;
+  }
   function filteredQuestions() {
-    let pool = allQuestions();
     const mode = els.mode.value;
     const counts = latestVotesByQuestion();
+    let pool = allQuestions().filter(q => isVisible(q, counts));
     if (CATEGORIES.includes(mode)) pool = pool.filter(q => q.category === mode);
     if (mode === 'Popular') {
       const popular = pool.filter(q => (counts[q.id]?.up||0)+(counts[q.id]?.down||0)>=3)
@@ -183,6 +215,7 @@
     els.upCount.textContent=c.up; els.downCount.textContent=c.down;
     els.upvote.className='vote-button'+(current&&localVotes[current.id]===1?' active up':'');
     els.downvote.className='vote-button'+(current&&localVotes[current.id]===-1?' active down':'');
+    els.reportButton.disabled=!current;
     const n=c.up+c.down;
     els.rankInfo.textContent=n?`${n} voto${n===1?'':'s'} · ${Math.round(c.up/n*100)}% positivos`:'Sin votos todavía';
     updateCommunityStats();
@@ -228,7 +261,7 @@
       const timer=setTimeout(finish,timeout);
       try{
         ws=new WebSocket(url);
-        ws.onopen=()=>ws.send(JSON.stringify(['REQ',sub,{kinds:[EVENT_KIND],'#t':[QUESTION_TAG],limit:600},{kinds:[EVENT_KIND],'#t':[VOTE_TAG],limit:4000}]));
+        ws.onopen=()=>ws.send(JSON.stringify(['REQ',sub,{kinds:[EVENT_KIND],'#t':[QUESTION_TAG],limit:600},{kinds:[EVENT_KIND],'#t':[VOTE_TAG],limit:4000},{kinds:[EVENT_KIND],'#t':[REPORT_TAG],limit:2000}]));
         ws.onmessage=msg=>{try{const data=JSON.parse(msg.data);if(data[0]==='EVENT'&&data[1]===sub)events.push(data[2]);if(data[0]==='EOSE'&&data[1]===sub){clearTimeout(timer);finish();}}catch(_){}};
         ws.onerror=()=>{}; ws.onclose=()=>{clearTimeout(timer);finish();};
       }catch(_){clearTimeout(timer);finish();}
@@ -264,16 +297,22 @@
     if(event.kind!==EVENT_KIND||!event.tags.some(t=>t[0]==='t'&&t[1]===VOTE_TAG)||!event.tags.some(t=>t[0]==='d'&&String(t[1]||'').startsWith('v:'))||!verifyEvent(event))return null;
     try{const d=JSON.parse(event.content);if(!d.questionId||![1,-1].includes(d.value))return null;return{pubkey:event.pubkey,questionId:d.questionId,value:d.value,created_at:event.created_at,eventId:event.id}}catch(_){return null}
   }
+  function parseReportEvent(event){
+    if(event.kind!==EVENT_KIND||!event.tags.some(t=>t[0]==='t'&&t[1]===REPORT_TAG)||!event.tags.some(t=>t[0]==='d'&&String(t[1]||'').startsWith('r:'))||!verifyEvent(event))return null;
+    try{const d=JSON.parse(event.content);if(!d.questionId)return null;return{pubkey:event.pubkey,questionId:String(d.questionId),reason:String(d.reason||'otro').slice(0,24),created_at:event.created_at,eventId:event.id}}catch(_){return null}
+  }
   function mergeEvents(events){
     const qMap=new Map(communityQuestions.map(q=>[q.id,q]));
-    let acceptedQ=0,acceptedV=0;
+    let acceptedQ=0,acceptedV=0,acceptedR=0;
     events.forEach(event=>{
+      if(blocked.has(event.pubkey))return; // nada de un autor bloqueado llega a guardarse
       const q=parseQuestionEvent(event); if(q){const old=qMap.get(q.id);if(!old||(q.createdAt||0)>=(old.createdAt||0)){qMap.set(q.id,q);acceptedQ++;}return;}
-      const v=parseVoteEvent(event); if(v){const key=`${v.pubkey}:${v.questionId}`;const old=voteEvents[key];if(!old||v.created_at>=old.created_at){voteEvents[key]=v;acceptedV++;}}
+      const v=parseVoteEvent(event); if(v){const key=`${v.pubkey}:${v.questionId}`;const old=voteEvents[key];if(!old||v.created_at>=old.created_at){voteEvents[key]=v;acceptedV++;}return;}
+      const r=parseReportEvent(event); if(r){const key=`${r.pubkey}:${r.questionId}`;const old=reportEvents[key];if(!old||r.created_at>=old.created_at){reportEvents[key]=r;acceptedR++;}}
     });
     communityQuestions=[...qMap.values()].slice(-1000);
-    save(STORAGE.communityQuestions,communityQuestions);save(STORAGE.voteEvents,voteEvents);updateCard();
-    return {acceptedQ,acceptedV};
+    save(STORAGE.communityQuestions,communityQuestions);save(STORAGE.voteEvents,voteEvents);save(STORAGE.reportEvents,reportEvents);updateCard();
+    return {acceptedQ,acceptedV,acceptedR};
   }
   async function syncCommunity(showToast=true){
     if(syncing)return; if(!navigator.onLine){toast('No hay conexión');return;}
@@ -303,6 +342,36 @@
       if(event){queueEvent(event);const ok=await publishEvent(event,true);if(ok){removePending(event.id);q.pending=false;save(STORAGE.custom,customQuestions);}}
     }
   }
+  function openReport(){
+    if(!current){toast('Saca una pregunta primero');return;}
+    els.reportQuestion.textContent=current.text;
+    els.blockRow.style.display=(current.author&&current.source!=='builtin')?'flex':'none';
+    els.blockAuthor.checked=false;
+    els.reportReason.selectedIndex=0;
+    showFormError(els.reportError,'');
+    els.reportDialog.showModal();
+  }
+  async function sendReport(){
+    if(!current){els.reportDialog.close();return;}
+    const q=current, reason=els.reportReason.value, alsoBlock=els.blockAuthor.checked&&!!q.author&&q.source!=='builtin';
+    hidden.add(q.id); save(STORAGE.hidden,[...hidden]);
+    if(alsoBlock){ blocked.add(q.author); save(STORAGE.blocked,[...blocked]); }
+    reportEvents[`${pubkey}:${q.id}`]={pubkey,questionId:q.id,reason,created_at:now(),local:true};
+    save(STORAGE.reportEvents,reportEvents);
+    els.reportDialog.close();
+    toast(alsoBlock?'Denunciada. Autor bloqueado':'Denunciada y oculta');
+    drawQuestion();
+    if(hasNativeSigning()){
+      const event=signEvent({kind:EVENT_KIND,created_at:now(),tags:[['d',`r:${q.id}`],['t',REPORT_TAG],['q',q.id],['client','sinfiltro-android']],content:JSON.stringify({questionId:q.id,reason,version:1})});
+      if(event){queueEvent(event);const ok=await publishEvent(event,false);if(ok)removePending(event.id);}
+    }
+  }
+  function restoreHidden(){
+    if(!hidden.size&&!blocked.size){toast('No tienes nada oculto');return;}
+    hidden.clear(); blocked.clear();
+    save(STORAGE.hidden,[]); save(STORAGE.blocked,[]);
+    updateCard(); toast('Restaurado lo que ocultaste tú');
+  }
   function shareText(title,text){
     if(nativeCall('shareText',title,text)!==null)return;
     if(navigator.share)navigator.share({title,text}).catch(()=>{});else window.prompt('Copia este texto:',text);
@@ -310,6 +379,7 @@
   function updateCommunityStats(){
     els.communityQuestions.textContent=communityQuestions.length+customQuestions.length;
     els.communityVotes.textContent=Object.keys(voteEvents).length;
+    els.hiddenCount.textContent=hiddenTotal();
     els.pendingCount.textContent=pendingEvents.length;
   }
   function openCommunity(){els.relayInput.value=relays.join('\n');showFormError(els.relayError,'');updateCommunityStats();els.communityDialog.showModal();}
@@ -333,6 +403,11 @@
   els.shareQuestion.addEventListener('click',()=>current?shareText(APP_TITLE,`${current.text}\n\n${APP_TITLE} · Vota tú también.`):toast('Saca una pregunta primero'));
   els.sync.addEventListener('click',()=>syncCommunity());
   els.shareApp.addEventListener('click',()=>{if(nativeCall('shareApp')===null)toast('El APK se puede compartir desde la aplicación Android')});
+  els.reportButton.addEventListener('click',openReport);
+  els.closeReport.addEventListener('click',()=>els.reportDialog.close());
+  els.cancelReport.addEventListener('click',()=>els.reportDialog.close());
+  els.reportForm.addEventListener('submit',e=>{e.preventDefault();sendReport()});
+  els.clearHidden.addEventListener('click',restoreHidden);
   els.communityStatus.addEventListener('click',openCommunity);
   els.closeCommunity.addEventListener('click',()=>els.communityDialog.close());
   els.saveRelays.addEventListener('click',saveRelaySettings);
