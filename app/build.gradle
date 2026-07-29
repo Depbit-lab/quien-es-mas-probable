@@ -2,6 +2,11 @@ plugins {
     id 'com.android.application'
 }
 
+// La clave de firma llega por variables de entorno, nunca desde el repositorio.
+// Sin ellas el proyecto sigue compilando: la release sale sin firmar y solo vale para pruebas.
+def keystorePath = System.getenv('ANDROID_KEYSTORE_PATH')
+def hasKeystore = keystorePath != null && !keystorePath.isEmpty() && file(keystorePath).exists()
+
 android {
     namespace 'com.depbit.sinfiltro'
     compileSdk 35
@@ -10,13 +15,32 @@ android {
         applicationId 'com.depbit.sinfiltro'
         minSdk 26
         targetSdk 35
-        versionCode 5
-        versionName '0.4.0'
+        versionCode 6
+        versionName '0.5.0'
+    }
+
+    signingConfigs {
+        release {
+            if (hasKeystore) {
+                storeFile file(keystorePath)
+                storePassword System.getenv('ANDROID_KEYSTORE_PASSWORD')
+                keyAlias System.getenv('ANDROID_KEY_ALIAS')
+                // PKCS12 exige que la clave y el almacen compartan contrasena.
+                keyPassword System.getenv('ANDROID_KEYSTORE_PASSWORD')
+                storeType 'PKCS12'
+                // v1 ademas de v2/v3: con minSdk 26 no hace falta, pero deja el certificado
+                // dentro de META-INF y permite comprobar con quien se ha firmado.
+                enableV1Signing true
+                enableV2Signing true
+                enableV3Signing true
+            }
+        }
     }
 
     buildTypes {
         release {
             minifyEnabled false
+            if (hasKeystore) signingConfig signingConfigs.release
         }
     }
 }

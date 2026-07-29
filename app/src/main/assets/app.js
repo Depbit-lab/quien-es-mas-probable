@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const APP_VERSION = '0.4.0';
+  const APP_VERSION = '0.5.0';
   const APP_TITLE = '¿Quién es más probable que…?';
   const QUESTION_TAG = 'sinfiltro-question-v1';
   const VOTE_TAG = 'sinfiltro-vote-v1';

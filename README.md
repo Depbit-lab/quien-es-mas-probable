@@ -57,19 +57,36 @@ vigente por pregunta.
 ## Compilar
 
 **Con GitHub Actions:** pestaña *Actions* → *Build Android APK* → descarga el artefacto
-`SinFiltro-APK`. Cada push a `main` lo compila automáticamente.
+`QuienEsMasProbable`, que contiene el APK firmado y el AAB para Google Play. Cada push a
+`main` lo compila automáticamente.
 
 **Con Android Studio:** abre la carpeta, instala el SDK 35 cuando lo pida y ejecuta
-*Build > Build APK(s)*.
+*Build > Build APK(s)*. Sin la clave de firma saldrá una release sin firmar, válida solo para
+pruebas.
 
 ### Firma
 
-El APK que genera el CI está firmado con una clave de depuración **distinta en cada
-ejecución**. Eso basta para probar, pero significa que una versión nueva no se puede instalar
-encima de la anterior: Android rechaza la actualización si la firma no coincide.
+Las versiones se firman siempre con la misma clave, así que una versión nueva se instala
+encima de la anterior sin perder los votos ni las preferencias.
 
-Para repartir actualizaciones de verdad hay que generar una clave propia y usar siempre la
-misma en todas las versiones.
+La clave llega al CI desde tres secretos del repositorio y nunca está en el código:
+
+| Secreto | Contenido |
+|---|---|
+| `ANDROID_KEYSTORE_BASE64` | El almacén PKCS12 codificado en base64. |
+| `ANDROID_KEYSTORE_PASSWORD` | Su contraseña. |
+| `ANDROID_KEY_ALIAS` | El alias de la clave, `upload`. |
+
+Para compilar firmado en local, exporta `ANDROID_KEYSTORE_PATH` apuntando al `.p12` junto a
+las otras dos variables. Si no existe la clave, el proyecto compila igual pero sin firmar.
+
+Certificado actual, huella SHA-256:
+
+```
+32:2A:9C:58:F0:36:76:C4:D0:44:9D:83:A4:58:01:9D:D5:12:49:E4:43:BC:82:8F:6A:B6:FF:CE:02:50:8C:4F
+```
+
+Cada compilación comprueba la firma y falla si el APK sale sin firmar.
 
 ## Licencia
 
