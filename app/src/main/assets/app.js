@@ -43,7 +43,7 @@
 
   const els = Object.fromEntries([
     'mode','noRepeat','badge','question','remaining','rankInfo','upvote','downvote','upCount','downCount',
-    'next','addQuestion','shareQuestion','sync','shareApp','communityStatus','statusText','addDialog','addForm',
+    'next','addQuestion','shareQuestion','sync','communityStatus','statusText','addDialog','addForm',
     'newQuestion','newCategory','publishQuestion','communityDialog','closeCommunity','relayInput','resetRelays',
     'saveRelays','communityQuestions','communityVotes','pendingCount','toast','addError','relayError',
     'closeAdd','cancelAdd','reportButton','reportDialog','reportForm','reportQuestion','reportReason',
@@ -459,7 +459,6 @@
   els.addForm.addEventListener('submit',e=>{e.preventDefault();addQuestion()});
   els.shareQuestion.addEventListener('click',()=>current?shareText(APP_TITLE,`${current.text}\n\n${APP_TITLE} · Vota tú también.`):toast('Saca una pregunta primero'));
   els.sync.addEventListener('click',()=>syncCommunity());
-  els.shareApp.addEventListener('click',()=>{if(nativeCall('shareApp')===null)toast('El APK se puede compartir desde la aplicación Android')});
   els.reportButton.addEventListener('click',openReport);
   els.closeReport.addEventListener('click',()=>els.reportDialog.close());
   els.cancelReport.addEventListener('click',()=>els.reportDialog.close());

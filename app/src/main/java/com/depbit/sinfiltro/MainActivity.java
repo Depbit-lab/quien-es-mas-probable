@@ -16,9 +16,6 @@ import android.webkit.WebResourceRequest;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -126,22 +123,6 @@ public class MainActivity extends Activity {
             });
         }
 
-        @JavascriptInterface public void shareApp() {
-            runOnUiThread(() -> {
-                try {
-                    File source = new File(getApplicationInfo().sourceDir);
-                    File dir = new File(getCacheDir(), "shared"); if (!dir.exists()) dir.mkdirs();
-                    File target = new File(dir, "QuienEsMasProbable.apk"); copy(source, target);
-                    Uri uri = Uri.parse("content://" + getPackageName() + ".files/apk/QuienEsMasProbable.apk");
-                    Intent intent = new Intent(Intent.ACTION_SEND);
-                    intent.setType("application/vnd.android.package-archive");
-                    intent.putExtra(Intent.EXTRA_STREAM, uri);
-                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    startActivity(Intent.createChooser(intent, getString(R.string.share_app_chooser)));
-                } catch (Exception ignored) {}
-            });
-        }
-
         private byte[] getSecretKey() throws Exception {
             String stored = getSharedPreferences("nostr_identity", MODE_PRIVATE).getString("secret", null);
             if (stored != null && stored.length() == 64) return NostrCrypto.unhex(stored);
@@ -149,12 +130,6 @@ public class MainActivity extends Activity {
             do { random.nextBytes(key); } while (!NostrCrypto.isValidSecret(key));
             getSharedPreferences("nostr_identity", MODE_PRIVATE).edit().putString("secret", NostrCrypto.hex(key)).apply();
             return key;
-        }
-    }
-
-    private static void copy(File source, File target) throws Exception {
-        try (FileInputStream in = new FileInputStream(source); FileOutputStream out = new FileOutputStream(target)) {
-            byte[] buffer = new byte[8192]; int count; while ((count = in.read(buffer)) > 0) out.write(buffer, 0, count);
         }
     }
 }

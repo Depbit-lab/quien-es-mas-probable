@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Política de privacidad · ¿Quién es más probable?</title>
+<meta name="description" content="Política de privacidad de la aplicación Android ¿Quién es más probable? (com.depbit.sinfiltro).">
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 2.5rem 1.25rem 5rem;
+    background: #0b0b0e; color: #e6e6ea;
+    font: 16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  main { max-width: 46rem; margin: 0 auto; }
+  h1 { font-size: 1.9rem; line-height: 1.2; margin: 0 0 .35rem; letter-spacing: -.02em; }
+  h2 { font-size: 1.25rem; margin: 2.75rem 0 .75rem; letter-spacing: -.01em; }
+  h3 { font-size: 1.02rem; margin: 1.75rem 0 .5rem; color: #c9c9d2; }
+  .meta { color: #8b8b98; font-size: .9rem; margin: 0 0 2rem; }
+  .meta b { color: #e6e6ea; font-weight: 600; }
+  a { color: #8ab4ff; }
+  ul { padding-left: 1.25rem; }
+  li { margin: .3rem 0; }
+  code {
+    background: #17171d; border: 1px solid #27272f; border-radius: 4px;
+    padding: .1em .4em; font-size: .88em;
+  }
+  table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: .93rem; }
+  th, td { border: 1px solid #27272f; padding: .55rem .7rem; text-align: left; vertical-align: top; }
+  th { background: #17171d; font-weight: 600; }
+  .callout {
+    background: #17171d; border-left: 3px solid #e0b341;
+    padding: .9rem 1.1rem; margin: 1.25rem 0; border-radius: 0 6px 6px 0;
+  }
+  .callout.age { border-left-color: #e05c5c; }
+  .callout p:first-child { margin-top: 0; }
+  .callout p:last-child { margin-bottom: 0; }
+  hr { border: 0; border-top: 1px solid #27272f; margin: 3rem 0 1.5rem; }
+  footer { color: #8b8b98; font-size: .88rem; }
+</style>
+</head>
+<body>
+<main>
+
+<h1>Política de privacidad</h1>
+<p class="meta">
+  <b>Aplicación:</b> ¿Quién es más probable? (<code>com.depbit.sinfiltro</code>)<br>
+  <b>Responsable:</b> Depbit<br>
+  <b>Contacto:</b> depbit@proton.me<br>
+  <b>Última actualización:</b> 31 de julio de 2026
+</p>
+
+<p>Esta aplicación es un juego de preguntas para grupos de adultos. Está pensada para funcionar
+sin conexión. No hay cuentas, no hay registro y no se pide ningún dato personal en ningún
+momento.</p>
+
+<h2>Resumen</h2>
+<ul>
+  <li><b>No pedimos ni recogemos</b> nombre, correo, teléfono, ubicación, contactos ni identificadores publicitarios.</li>
+  <li><b>No hay anuncios</b> ni redes publicitarias.</li>
+  <li><b>No hay analítica</b> ni SDK de seguimiento de terceros.</li>
+  <li><b>No vendemos ni compartimos datos</b> con nadie con fines comerciales.</li>
+  <li>La app funciona <b>completamente sin conexión</b> si no usas la parte comunitaria.</li>
+  <li>La parte comunitaria es <b>opcional</b> y publica en <b>relays Nostr públicos</b>. Lo que publicas ahí es público y permanente.</li>
+</ul>
+
+<h2>Datos que se guardan en tu dispositivo</h2>
+<p>Todo esto se queda en tu móvil y nunca se envía a Depbit:</p>
+<table>
+  <thead><tr><th>Dato</th><th>Dónde se guarda</th><th>Para qué</th></tr></thead>
+  <tbody>
+    <tr><td>Tus votos (▲/▼) y preguntas favoritas</td><td>Almacenamiento local del navegador integrado</td><td>Construir el mazo «Para ti» y «Mis favoritas»</td></tr>
+    <tr><td>Preguntas ya vistas por sección</td><td>Almacenamiento local</td><td>Evitar repeticiones y desbloquear la sección</td></tr>
+    <tr><td>Preguntas ocultas y autores bloqueados</td><td>Almacenamiento local</td><td>Que no vuelvan a aparecerte</td></tr>
+    <tr><td>Lista de relays configurada</td><td>Almacenamiento local</td><td>Saber a qué servidores conectarse</td></tr>
+    <tr><td>Cola de envíos pendientes</td><td>Almacenamiento local</td><td>Reintentar cuando vuelva la conexión</td></tr>
+    <tr><td>Clave privada Nostr</td><td><code>SharedPreferences</code> privadas de la app</td><td>Firmar lo que publicas</td></tr>
+  </tbody>
+</table>
+
+<div class="callout">
+  <p><b>La clave privada Nostr nunca sale del dispositivo.</b> Se genera de forma aleatoria la
+  primera vez que se necesita, se guarda en el almacenamiento privado de la aplicación y solo se
+  usa dentro del código nativo de Android para firmar. No se expone al contenido web de la app ni
+  se transmite a ningún servidor.</p>
+</div>
+
+<p>Desinstalar la aplicación borra todos estos datos, incluida la clave privada. Si la borras
+pierdes el control de lo que ya hayas publicado en los relays.</p>
+
+<h2>Datos que salen del dispositivo</h2>
+<p>Solo cuando <b>tú</b> decides publicar algo o sincronizar la comunidad.</p>
+
+<h3>Qué se envía</h3>
+<p>Al añadir una pregunta, votar o denunciar, se construye un evento Nostr firmado que contiene:</p>
+<ul>
+  <li>El texto y la categoría de la pregunta, o el voto o denuncia correspondiente.</li>
+  <li>Tu <b>clave pública</b> Nostr (un identificador aleatorio, no ligado a tu identidad real).</li>
+  <li>La marca de tiempo y la firma criptográfica.</li>
+</ul>
+<p>También, por el propio funcionamiento de una conexión de red, los relays pueden ver tu
+<b>dirección IP</b>.</p>
+
+<h3>A dónde se envía</h3>
+<p>A los relays Nostr que tengas configurados. Por defecto:</p>
+<ul>
+  <li><code>wss://relay.damus.io</code></li>
+  <li><code>wss://nos.lol</code></li>
+  <li><code>wss://relay.primal.net</code></li>
+</ul>
+<p>Puedes cambiarlos o quitarlos desde la pantalla de comunidad de la app.</p>
+<p><b>Estos relays son servidores de terceros independientes. Depbit no los controla, no los
+gestiona y no tiene acceso privilegiado a ellos.</b> Cada relay aplica sus propias políticas de
+retención y privacidad. Consulta las suyas si te preocupa.</p>
+
+<h3>Qué implica</h3>
+<div class="callout">
+  <p>La red Nostr es pública por diseño. Cualquier persona con un cliente Nostr puede leer lo que
+  publiques. <b>Una vez publicado, no se puede garantizar el borrado</b>: los relays pueden
+  conservar y replicar el contenido indefinidamente, y no existe un botón que lo retire de todas
+  partes.</p>
+  <p>Por eso: <b>no publiques nada que no quieras que sea público y permanente</b>, y no incluyas
+  datos personales tuyos ni de nadie en las preguntas que escribas.</p>
+</div>
+<p>Depbit <b>no opera ningún servidor</b> para esta aplicación y por tanto no almacena ninguna
+copia de lo que publicas.</p>
+
+<h2>Contenido generado por usuarios y moderación</h2>
+<p>La app permite añadir preguntas que ven otras personas. Para limitar el abuso:</p>
+<ul>
+  <li>Solo se puede publicar tras haber visto todas las preguntas integradas de esa sección.</li>
+  <li>Cada pregunta tiene un botón ⚑ para denunciarla y bloquear a su autor, con efecto inmediato en tu dispositivo.</li>
+  <li>Una pregunta se oculta automáticamente cuando 3 personas distintas la denuncian, o cuando acumula 5 votos o más con menos del 25 % positivos.</li>
+  <li>Las categorías son una lista cerrada; cualquier categoría desconocida se reetiqueta.</li>
+</ul>
+<p>Las reglas completas están en
+<a href="https://github.com/Depbit-lab/quien-es-mas-probable/blob/main/NORMAS.md">NORMAS.md</a>.
+Como la moderación es distribuida y los relays son independientes, Depbit no puede retirar
+unilateralmente contenido ya publicado en la red.</p>
+
+<h2>Edad mínima</h2>
+<div class="callout age">
+  <p><b>Esta aplicación es solo para mayores de 18 años.</b> El contenido es deliberadamente
+  incómodo e incluye temas sexuales, consumo de alcohol y situaciones adultas. No está dirigida a
+  menores y no recogemos a sabiendas datos de menores.</p>
+</div>
+
+<h2>Permisos de Android</h2>
+<p>La aplicación solicita un único permiso:</p>
+<ul>
+  <li><b>INTERNET</b>: exclusivamente para conectarse a los relays Nostr cuando usas la parte
+  comunitaria. Sin usarla, la app no hace ninguna petición de red.</li>
+</ul>
+<p>No pide cámara, micrófono, contactos, ubicación, almacenamiento ni identificadores del
+dispositivo.</p>
+
+<h2>Tus derechos</h2>
+<p>Como no guardamos ningún dato tuyo en ningún servidor, no hay una base de datos de la que
+extraerte o borrarte. Puedes:</p>
+<ul>
+  <li><b>Borrar todos tus datos locales</b>: desinstala la aplicación o borra sus datos desde los ajustes de Android.</li>
+  <li><b>Cambiar de identidad</b>: borrar los datos de la app genera una clave Nostr nueva.</li>
+  <li><b>Dejar de enviar cualquier cosa</b>: no uses el botón de añadir ni el de sincronizar, o vacía la lista de relays.</li>
+</ul>
+<p>Para lo ya publicado en relays de terceros, tendrías que dirigirte a cada operador de relay.</p>
+
+<h2>Cambios en esta política</h2>
+<p>Si cambia, se actualizará en esta misma página y en el repositorio del proyecto. La fecha de
+arriba indica la última revisión.</p>
+
+<h2>Contacto</h2>
+<p>depbit@proton.me</p>
+
+<hr>
+<footer>
+  Código fuente:
+  <a href="https://github.com/Depbit-lab/quien-es-mas-probable">github.com/Depbit-lab/quien-es-mas-probable</a>
+</footer>
+
+</main>
+</body>
+</html>

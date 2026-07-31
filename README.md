@@ -18,7 +18,6 @@ Creado por **Depbit**.
   SharedPreferences y nunca se expone al WebView.
 - Cola offline para preguntas y votos pendientes.
 - Compartir preguntas por WhatsApp u otras apps.
-- Compartir el propio APK desde la aplicación.
 - Denunciar preguntas y bloquear autores, con ocultación automática por umbral comunitario.
 
 ## Moderación
