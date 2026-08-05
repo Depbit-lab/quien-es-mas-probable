@@ -9,14 +9,15 @@ def hasKeystore = keystorePath != null && !keystorePath.isEmpty() && file(keysto
 
 android {
     namespace 'com.depbit.sinfiltro'
-    compileSdk 35
+    compileSdk 36
 
     defaultConfig {
         applicationId 'com.depbit.sinfiltro'
         minSdk 26
-        targetSdk 35
-        versionCode 8
-        versionName '0.7.0'
+        // Google Play exige API 36 para poder subir actualizaciones desde el 31/08/2026.
+        targetSdk 36
+        versionCode 9
+        versionName '0.7.1'
     }
 
     signingConfigs {

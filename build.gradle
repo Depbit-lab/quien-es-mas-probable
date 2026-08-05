@@ -1,3 +1,4 @@
 plugins {
-    id 'com.android.application' version '8.7.3' apply false
+    // Compilar contra API 36 exige AGP 8.9.1 o superior.
+    id 'com.android.application' version '8.13.2' apply false
 }

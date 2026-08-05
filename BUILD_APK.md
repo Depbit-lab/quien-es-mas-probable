@@ -3,7 +3,7 @@
 ## Android Studio
 
 1. Abre esta carpeta como proyecto.
-2. Instala Android SDK 35 cuando Android Studio lo solicite.
+2. Instala Android SDK 36 cuando Android Studio lo solicite.
 3. Selecciona **Build > Build APK(s)**.
 4. El archivo aparecerá en `app/build/outputs/apk/debug/app-debug.apk`.
 

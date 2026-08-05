@@ -3,9 +3,16 @@ package com.depbit.sinfiltro;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.Insets;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
+import android.view.WindowInsets;
+import android.widget.FrameLayout;
+import android.window.OnBackInvokedDispatcher;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
@@ -28,11 +35,17 @@ public class MainActivity extends Activity {
     @Override public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Window window = getWindow();
+        // Desde Android 15 estas dos llamadas no hacen nada: el color de las barras sale del
+        // fondo de la ventana. Se quedan porque en Android 14 y anteriores siguen siendo utiles.
         window.setStatusBarColor(Color.rgb(11,11,14));
         window.setNavigationBarColor(Color.rgb(11,11,14));
 
         webView = new WebView(this);
-        setContentView(webView);
+        FrameLayout root = new FrameLayout(this);
+        root.addView(webView, new FrameLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        setContentView(root);
+        reserveSystemBarSpace(root);
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
@@ -40,7 +53,7 @@ public class MainActivity extends Activity {
         settings.setAllowFileAccess(true);
         settings.setAllowContentAccess(true);
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
-        settings.setUserAgentString(settings.getUserAgentString() + " QuienEsMasProbable/0.7.0");
+        settings.setUserAgentString(settings.getUserAgentString() + " QuienEsMasProbable/0.7.1");
         webView.setWebViewClient(new WebViewClient() {
             @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 Uri uri = request.getUrl();
@@ -52,10 +65,35 @@ public class MainActivity extends Activity {
         webView.setWebChromeClient(new WebChromeClient());
         webView.addJavascriptInterface(new AndroidBridge(), "Android");
         webView.loadUrl("file:///android_asset/index.html");
+
+        // Con targetSdk 36 el sistema activa el gesto atras predictivo y deja de llamar a
+        // onBackPressed(). Registramos el callback nuevo; en Android 12 y anteriores no existe
+        // y sigue entrando por onBackPressed(), asi que ambos caminos hacen lo mismo.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
+                OnBackInvokedDispatcher.PRIORITY_DEFAULT, this::goBack);
+        }
+    }
+
+    // Android 16 obliga a dibujar de borde a borde. Reservamos aqui el hueco de las barras y
+    // le devolvemos al WebView unos insets a cero, para que el env(safe-area-inset-*) del CSS
+    // no vuelva a sumar el mismo margen y el contenido acabe con el doble de separacion.
+    private void reserveSystemBarSpace(View root) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return;
+        root.setOnApplyWindowInsetsListener((view, windowInsets) -> {
+            int types = WindowInsets.Type.systemBars() | WindowInsets.Type.displayCutout();
+            Insets bars = windowInsets.getInsets(types);
+            view.setPadding(bars.left, bars.top, bars.right, bars.bottom);
+            return new WindowInsets.Builder(windowInsets).setInsets(types, Insets.NONE).build();
+        });
     }
 
     @Override public void onBackPressed() {
         if (webView == null) { super.onBackPressed(); return; }
+        goBack();
+    }
+
+    private void goBack() {
         // Un <dialog> modal no crea historial, asi que sin esto el boton atras cerraria la app
         // dejando al usuario atrapado en el formulario.
         webView.evaluateJavascript(

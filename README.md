@@ -66,7 +66,7 @@ vigente por pregunta.
 `QuienEsMasProbable`, que contiene el APK firmado y el AAB para Google Play. Cada push a
 `main` lo compila automáticamente.
 
-**Con Android Studio:** abre la carpeta, instala el SDK 35 cuando lo pida y ejecuta
+**Con Android Studio:** abre la carpeta, instala el SDK 36 cuando lo pida y ejecuta
 *Build > Build APK(s)*. Sin la clave de firma saldrá una release sin firmar, válida solo para
 pruebas.
 

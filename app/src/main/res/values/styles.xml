@@ -2,6 +2,9 @@
 <resources>
     <style name="AppTheme" parent="android:style/Theme.Material.Light.NoActionBar">
         <item name="android:fontFamily">sans</item>
+        <!-- Con el modo de borde a borde de Android 16 el hueco de las barras lo pinta
+             la ventana, no el WebView: sin esto saldria el blanco del tema Material.Light. -->
+        <item name="android:windowBackground">#0b0b0e</item>
         <item name="android:windowLightStatusBar">false</item>
         <item name="android:statusBarColor">#0b0b0e</item>
         <item name="android:navigationBarColor">#0b0b0e</item>
